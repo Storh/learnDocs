@@ -27,5 +27,68 @@ menuRender: false 当前路由不展示菜单
 menuHeaderRender: false 当前路由不展示菜单顶栏
 flatMenu 子项往上提，只是不展示父菜单
 # 布局
-一点理解
+## 一点理解
 antd pro的新增页面中的新增布局（https://pro.ant.design/zh-CN/docs/new-page#%E6%96%B0%E5%A2%9E%E5%B8%83%E5%B1%80），其中提到的“config.ts 是一个数组，其中第一级数据就是我们的布局”，指的应该是路由配置。及，通过路由配置component属性来给一批子路由配置布局。
+
+## getInitialState
+```javascript
+/**
+ * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
+ * */
+//  getInitialState会在整个应用最开始执行，返回值会作为全局共享的数据。所以下面的是否在首页涉及到了首次打开时登录的地方
+
+//  getInitialState的函数返回值（函数后面的:代表了函数返回值，变量后面的:代表了变量的类型）是一个Promise泛型（通过泛型来使得对类型的约束可以复用）
+//  https://jkchao.github.io/typescript-book-chinese/typings/generices.html
+// 同时利用可选参数和可选属性，使得返回的数据也可以全是undefined
+// ?: 表示ts的可选参数和可选属性 如果使用了?:，可选参数会被自动地加上 | undefined 
+// https://www.tslang.cn/docs/handbook/advanced-types.html
+
+// 另：async的返回值是一个promise，这个promise要么会通过一个由async函数返回的值被解决，要么会通过一个从async函数中抛出的异常被拒绝
+// async function foo() {
+//   return 1
+// }
+// 等价于
+// function foo() {
+//   return Promise.resolve(1)
+// }
+// 没有return，就是promise的.then方法返回了一个undefined，但是是在await的promise的.then方法之后（注意promise的链式调用）
+// async function foo() {
+//   await 1
+// }
+// 等价于
+// function foo() {
+//   return Promise.resolve(1).then(() => undefined)
+// }
+// https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/async_function
+// https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise
+export async function getInitialState(): Promise<{
+  settings?: Partial<LayoutSettings>;
+  currentUser?: API.CurrentUser;
+  // fetchUserInfo是一个promise，这个promise的内容可以是queryCurrentUser()之后返回的data，要符合API.CurrentUser，或者promise返回了undefined
+  fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+}> {
+  const fetchUserInfo = async () => {
+    try {
+      const msg = await queryCurrentUser();
+      return msg.data;
+    } catch (error) {
+      history.push(loginPath);
+    }
+    return undefined;
+  };
+  // 非登录界面
+  if (history.location.pathname !== loginPath) {
+    const currentUser = await fetchUserInfo();
+    return {
+      fetchUserInfo,
+      currentUser,
+      settings: {},
+    };
+  }
+  // 如果是登录页面，不执行fetchUserInfo，currentUser为undefined
+  return {
+    fetchUserInfo,
+    settings: {},
+  };
+}
+```
