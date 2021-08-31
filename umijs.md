@@ -92,3 +92,7 @@ export async function getInitialState(): Promise<{
   };
 }
 ```
+## 布局修改
+布局修改个人感觉主要涉及了两个文件，一个是config\config.ts，另一个是src\app.tsx中的layout部分，需要分别结合https://umijs.org/zh-CN/plugins/plugin-layout、https://ant.design/docs/react/customize-theme-cn和https://procomponents.ant.design/components/layout去理解修改。
+在目前的工作中，主要是删除了config中的layout，然后配合antd的组件文档进行修改。然后因为页面的布局的具体的标签在app.tsx中所以在其中根据业务需求进行修改
+?.的意思基本和 && 是一样的 a?.b 相当于 a && a.b ? a.b : undefined
