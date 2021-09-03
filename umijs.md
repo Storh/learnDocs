@@ -96,3 +96,36 @@ export async function getInitialState(): Promise<{
 布局修改个人感觉主要涉及了两个文件，一个是config\config.ts，另一个是src\app.tsx中的layout部分，需要分别结合https://umijs.org/zh-CN/plugins/plugin-layout、https://ant.design/docs/react/customize-theme-cn和https://procomponents.ant.design/components/layout去理解修改。
 在目前的工作中，主要是删除了config中的layout，然后配合antd的组件文档进行修改。然后因为页面的布局的具体的标签在app.tsx中所以在其中根据业务需求进行修改
 ?.的意思基本和 && 是一样的 a?.b 相当于 a && a.b ? a.b : undefined
+
+# 网络请求
+网络请求的写法参考ant-d-pro的写法
+src\services\ant-design-pro\api.ts
+src\app.tsx
+src\services\ant-design-pro\typings.d.ts
+.d.ts为typescript的类型声明
+同时，网络请求采用的是umi-request，后续可以考虑学习和使用ahooks
+https://github.com/umijs/umi-request/blob/master/README_zh-CN.md
+https://ahooks.js.org/zh-CN/hooks/async
+https://pro.ant.design/zh-CN/docs/request/#%E4%BD%BF%E7%94%A8-request
+因为开发的时候，往往后端还没有开发完成或者有时候是远程mock或者前后分离开发，所有会有跨域问题，那么设置proxy来实现，但是要注意一个问题就是proxy在部署时不会生效，需要自己采用prefix前缀的方式访问后端。
+针对采用自带mock的情况
+
+# model
+https://dvajs.com/guide/introduce-class.html#%E6%95%B0%E6%8D%AE%E6%B5%81%E5%9B%BE
+umijs采用的是dvajs，整体的逻辑和构架如下：
+主要由3个部分和2个方法构成
+
+State：一个对象，保存整个应用状态
+View：React 组件构成的视图层
+Action：一个对象，描述事件
+connect 方法：一个函数，绑定 State 到 View
+dispatch 方法：一个函数，发送 Action 到 State
+
+action里写了要进行哪些操作时间来改变state，而state和视图的绑定是通过connect实现的，将一个函数和组件绑定。在绑定组件的同时，组件会自动在 props 中拥有 dispatch 方法，而这个方法就是action中设置的方法。
+具体实现时是通过model的形式。
+
+namespace: 当前 Model 的名称。整个应用的 State，由多个小的 Model 的 State 以 namespace 为 key 合成
+state: 该 Model 当前的状态。数据保存在这里，直接决定了视图层的输出
+reducers: Action 处理器，处理同步动作，用来算出最新的 State
+effects：Action 处理器，处理异步动作
+
